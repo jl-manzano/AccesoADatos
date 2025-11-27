@@ -6,46 +6,7 @@ import java.util.Scanner;
 public class CRUD {
     static Scanner sc = new Scanner(System.in);
 
-    public static void main(String[] args) {
-        // Establecer la conexión con la base de datos
-        Connection con = ConexionDB.conectar();
-
-        if (con != null) {
-            boolean continuar = true;
-            while (continuar) {
-                System.out.println("\nMenú de opciones:");
-                System.out.println("1. Crear tablas");
-                System.out.println("2. Insertar datos");
-                System.out.println("3. Modificar datos");
-                System.out.println("4. Listar datos");
-                System.out.println("5. Eliminar tablas");
-                System.out.println("6. Salir");
-                System.out.print("Elige una opción: ");
-                int opcion = sc.nextInt();
-                sc.nextLine();
-
-                if (opcion == 1) {
-                    crearTablas(con);
-                } else if (opcion == 2) {
-                    insertarDatos(con);
-                } else if (opcion == 3) {
-                    modificarDatos(con);
-                } else if (opcion == 4) {
-                    listarDatos(con);
-                } else if (opcion == 5) {
-                    eliminarTablas(con);
-                } else if (opcion == 6) {
-                    continuar = false;
-                    ConexionDB.desconectar(con);
-                } else {
-                    System.out.println("\nOpción no válida. Intenta nuevamente.");
-                }
-            }
-        } else {
-            System.out.println("\nError al conectar con la base de datos.");
-        }
-    }
-
+    // Crear tablas
     public static void crearTablas(Connection con) {
         System.out.println("\n¿Deseas crear todas las tablas o una tabla concreta?");
         System.out.println("1. Crear todas las tablas");
@@ -66,69 +27,24 @@ public class CRUD {
             sc.nextLine();
 
             if (tabla == 1) {
-                crearTablaPacientes(con);
+                CRUDPaciente.crearTablaPacientes(con);
             } else if (tabla == 2) {
-                crearTablaMedicamentos(con);
+                CRUDMedicamento.crearTablaMedicamentos(con);
             } else if (tabla == 3) {
-                crearTablaReceta(con);
+                CRUDReceta.crearTablaReceta(con);
+            } else {
+                System.out.println("Opción no válida.");
             }
         }
     }
 
     public static void crearTodasLasTablas(Connection con) {
-        crearTablaPacientes(con);
-        crearTablaMedicamentos(con);
-        crearTablaReceta(con);
+        CRUDPaciente.crearTablaPacientes(con);
+        CRUDMedicamento.crearTablaMedicamentos(con);
+        CRUDReceta.crearTablaReceta(con);
     }
 
-    public static void crearTablaPacientes(Connection con) {
-        String sql = "CREATE TABLE Pacientes ("
-                + "idPaciente int AUTO_INCREMENT Primary Key,"
-                + "nombre varChar(45),"
-                + "apellidos varChar(45),"
-                + "NSS varChar(11)"
-                + ")";
-        
-        try (Statement st = con.createStatement()) {
-            st.executeUpdate(sql);
-            System.out.println("\nTabla Pacientes creada con éxito.");
-        } catch (SQLException e) {
-            System.out.println("\nError al crear la tabla Pacientes: " + e.getMessage());
-        }
-    }
-
-    public static void crearTablaMedicamentos(Connection con) {
-        String sql = "CREATE TABLE Medicamentos ("
-                + "idMedicamento int AUTO_INCREMENT Primary Key, "
-                + "Composicion varChar(45)"
-                + ")";
-        
-        try (Statement st = con.createStatement()) {
-            st.executeUpdate(sql);
-            System.out.println("\nTabla Medicamentos creada con éxito.");
-        } catch (SQLException e) {
-            System.out.println("\nError al crear la tabla Medicamentos: " + e.getMessage());
-        }
-    }
-
-    public static void crearTablaReceta(Connection con) {
-        String sql = "CREATE TABLE Receta ("
-                + "idReceta int AUTO_INCREMENT Primary Key,"
-                + "idPaciente int,"
-                + "idMedicamento int,"
-                + "fechaFin date,"
-                + "Constraint Foreign Key (idPaciente) References Pacientes(idPaciente),"
-                + "Constraint Foreign Key (idMedicamento) References Medicamentos(idMedicamento)"
-                + ")";
-        
-        try (Statement st = con.createStatement()) {
-            st.executeUpdate(sql);
-            System.out.println("\nTabla Receta creada con éxito.");
-        } catch (SQLException e) {
-            System.out.println("\nError al crear la tabla Receta: " + e.getMessage());
-        }
-    }
-
+    // Insertar datos
     public static void insertarDatos(Connection con) {
         System.out.println("\n¿En qué tabla deseas insertar datos?");
         System.out.println("1. Pacientes");
@@ -138,81 +54,39 @@ public class CRUD {
         int opcion = sc.nextInt();
         sc.nextLine();
 
-        switch (opcion) {
-            case 1:
-                insertarPaciente(con);
-                break;
-
-            case 2:
-                insertarMedicamento(con);
-                break;
-
-            case 3:
-                insertarReceta(con);
-                break;
-
-            default:
-                System.out.println("\nOpción no válida.");
-                break;
+        if (opcion == 1) {
+            CRUDPaciente.insertarPaciente(con);
+        } else if (opcion == 2) {
+            CRUDMedicamento.insertarMedicamento(con);
+        } else if (opcion == 3) {
+            CRUDReceta.insertarReceta(con);
+        } else {
+            System.out.println("Opción no válida.");
         }
     }
 
-    public static void insertarPaciente(Connection con) {
-        System.out.print("\nIntroduce el nombre del paciente: ");
-        String nombre = sc.nextLine();
-        System.out.print("Introduce los apellidos del paciente: ");
-        String apellidos = sc.nextLine();
-        System.out.print("Introduce el NSS del paciente: ");
-        String nss = sc.nextLine();
-
-        String sql = "INSERT INTO Pacientes (nombre, apellidos, NSS) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, nombre);
-            ps.setString(2, apellidos);
-            ps.setString(3, nss);
-            ps.executeUpdate();
-            System.out.println("\nPaciente insertado correctamente.");
-        } catch (SQLException e) {
-            System.out.println("\nError al insertar el paciente: " + e.getMessage());
-        }
-    }
-
-    public static void insertarMedicamento(Connection con) {
-        System.out.print("\nIntroduce la composición del medicamento: ");
-        String composicion = sc.nextLine();
-
-        String sql = "INSERT INTO Medicamentos (composicion) VALUES (?)";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, composicion);
-            ps.executeUpdate();
-            System.out.println("\nMedicamento insertado correctamente.");
-        } catch (SQLException e) {
-            System.out.println("\nError al insertar medicamento: " + e.getMessage());
-        }
-    }
-
-    public static void insertarReceta(Connection con) {
-        System.out.print("\nIntroduce el ID del paciente: ");
-        int idPaciente = sc.nextInt();
+    // Modificar datos
+    public static void modificarDatos(Connection con) {
+        System.out.println("\n¿En qué tabla deseas modificar datos?");
+        System.out.println("1. Pacientes");
+        System.out.println("2. Medicamentos");
+        System.out.println("3. Receta");
+        System.out.print("Elige una opción: ");
+        int opcion = sc.nextInt();
         sc.nextLine();
-        System.out.print("Introduce el ID del medicamento: ");
-        int idMedicamento = sc.nextInt();
-        sc.nextLine();
-        System.out.print("Introduce la fecha de finalización de la receta (YYYY-MM-DD): ");
-        String fechaFin = sc.nextLine();
 
-        String sql = "INSERT INTO Receta (idPaciente, idMedicamento, fechaFin) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idPaciente);
-            ps.setInt(2, idMedicamento);
-            ps.setString(3, fechaFin);
-            ps.executeUpdate();
-            System.out.println("\nReceta insertada correctamente.");
-        } catch (SQLException e) {
-            System.out.println("\nError al insertar receta: " + e.getMessage());
+        if (opcion == 1) {
+            CRUDPaciente.modificarPaciente(con);
+        } else if (opcion == 2) {
+            CRUDMedicamento.modificarMedicamento(con);
+        } else if (opcion == 3) {
+            CRUDReceta.modificarReceta(con);
+        } else {
+            System.out.println("Opción no válida.");
         }
     }
 
+    // Listar datos
     public static void listarDatos(Connection con) {
         System.out.println("\n¿En qué tabla deseas listar los datos?");
         System.out.println("1. Pacientes");
@@ -222,162 +96,39 @@ public class CRUD {
         int opcion = sc.nextInt();
         sc.nextLine();
 
-        System.out.print("\n¿Deseas filtrar los datos? (S/N): ");
-        String filtro = sc.nextLine();
+        if (opcion == 1) {
+            CRUDPaciente.listarDatos(con);
+        } else if (opcion == 2) {
+            CRUDMedicamento.listarDatos(con);
+        } else if (opcion == 3) {
+            CRUDReceta.listarDatos(con);
+        } else {
+            System.out.println("Opción no válida.");
+        }
+    }
+
+    // Eliminar datos
+    public static void eliminarDatos(Connection con) {
+        System.out.println("\n¿De qué tabla deseas eliminar un registro?");
+        System.out.println("1. Pacientes");
+        System.out.println("2. Medicamentos");
+        System.out.println("3. Receta");
+        System.out.print("Elige una opción: ");
+        int opcion = sc.nextInt();
+        sc.nextLine();
 
         if (opcion == 1) {
-            if ("S".equalsIgnoreCase(filtro)) {
-                System.out.print("Introduce el campo para filtrar: ");
-                String campo = sc.nextLine();
-                System.out.print("Introduce el valor para filtrar: ");
-                String valor = sc.nextLine();
-                listarConFiltro(con, "Pacientes", campo, valor);
-            } else {
-                listarSinFiltro(con, "Pacientes");
-            }
+            CRUDPaciente.eliminarPaciente(con);
         } else if (opcion == 2) {
-            if ("S".equalsIgnoreCase(filtro)) {
-                System.out.print("Introduce el campo para filtrar: ");
-                String campo = sc.nextLine();
-                System.out.print("Introduce el valor para filtrar: ");
-                String valor = sc.nextLine();
-                listarConFiltro(con, "Medicamentos", campo, valor);
-            } else {
-                listarSinFiltro(con, "Medicamentos");
-            }
+            CRUDMedicamento.eliminarMedicamento(con);
         } else if (opcion == 3) {
-            if ("S".equalsIgnoreCase(filtro)) {
-                System.out.print("Introduce el campo para filtrar: ");
-                String campo = sc.nextLine();
-                System.out.print("Introduce el valor para filtrar: ");
-                String valor = sc.nextLine();
-                listarConFiltro(con, "Receta", campo, valor);
-            } else {
-                listarSinFiltro(con, "Receta");
-            }
+            CRUDReceta.eliminarReceta(con);
         } else {
-            System.out.println("\nOpción no válida.");
+            System.out.println("Opción no válida.");
         }
     }
 
-    public static void listarConFiltro(Connection con, String tabla, String campo, String valor) {
-        String sql = "SELECT * FROM " + tabla + " WHERE " + campo + " LIKE ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, "%" + valor + "%");
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                imprimirResultado(rs);
-            }
-        } catch (SQLException e) {
-            System.out.println("\nError al listar los datos con filtro: " + e.getMessage());
-        }
-    }
-
-    public static void listarSinFiltro(Connection con, String tabla) {
-        String sql = "SELECT * FROM " + tabla;
-        try (Statement st = con.createStatement()) {
-            ResultSet rs = st.executeQuery(sql);
-            while (rs.next()) {
-                imprimirResultado(rs);
-            }
-        } catch (SQLException e) {
-            System.out.println("\nError al listar los datos sin filtro: " + e.getMessage());
-        }
-    }
-
-    public static void imprimirResultado(ResultSet rs) throws SQLException {
-        ResultSetMetaData rsMetaData = rs.getMetaData();
-        int columnCount = rsMetaData.getColumnCount();
-
-        for (int i = 1; i <= columnCount; i++) {
-            String columnName = rsMetaData.getColumnName(i);
-            String columnValue = rs.getString(i);
-            System.out.println(columnName + ": " + columnValue);
-        }
-        System.out.println("----------------------------------");
-    }
-    
-    public static void modificarDatos(Connection con) {
-        System.out.print("\n¿En qué tabla quieres modificar los datos? (Pacientes, Medicamentos, Receta): ");
-        String tabla = sc.nextLine().toLowerCase();
-
-        System.out.print("Introduce el ID del registro a modificar: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-
-        try {
-            if ("pacientes".equals(tabla)) {
-                modificarPaciente(con, id);
-            } else if ("medicamentos".equals(tabla)) {
-                modificarMedicamento(con, id);
-            } else if ("receta".equals(tabla)) {
-                modificarReceta(con, id);
-            } else {
-                System.out.println("\nTabla no válida.");
-            }
-        } catch (SQLException e) {
-            System.out.println("\nError al modificar los datos: " + e.getMessage());
-        }
-    }
-
-    private static void modificarPaciente(Connection con, int idPaciente) throws SQLException {
-        System.out.print("\nIntroduce el nuevo nombre del paciente: ");
-        String nuevoNombre = sc.nextLine();
-        System.out.print("Introduce los nuevos apellidos del paciente: ");
-        String nuevosApellidos = sc.nextLine();
-        System.out.print("Introduce el nuevo NSS del paciente: ");
-        String nuevoNSS = sc.nextLine();
-
-        String sql = "UPDATE Pacientes SET nombre = ?, apellidos = ?, NSS = ? WHERE idPaciente = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, nuevoNombre);
-            ps.setString(2, nuevosApellidos);
-            ps.setString(3, nuevoNSS);
-            ps.setInt(4, idPaciente);
-            ps.executeUpdate();
-            System.out.println("\nPaciente modificado correctamente.");
-        } catch (SQLException e) {
-            System.out.println("\nError al modificar el paciente: " + e.getMessage());
-        }
-    }
-
-    private static void modificarMedicamento(Connection con, int idMedicamento) throws SQLException {
-        System.out.print("\nIntroduce la nueva composición del medicamento: ");
-        String nuevaComposicion = sc.nextLine();
-
-        String sql = "UPDATE Medicamentos SET Composicion = ? WHERE idMedicamento = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, nuevaComposicion);
-            ps.setInt(2, idMedicamento);
-            ps.executeUpdate();
-            System.out.println("\nMedicamento modificado correctamente.");
-        } catch (SQLException e) {
-            System.out.println("\nError al modificar el medicamento: " + e.getMessage());
-        }
-    }
-
-    private static void modificarReceta(Connection con, int idReceta) throws SQLException {
-        System.out.print("\nIntroduce el nuevo ID del paciente: ");
-        int nuevoIdPaciente = sc.nextInt();
-        System.out.print("Introduce el nuevo ID del medicamento: ");
-        int nuevoIdMedicamento = sc.nextInt();
-        sc.nextLine();
-        System.out.print("Introduce la nueva fecha de finalización de la receta (YYYY-MM-DD): ");
-        String nuevaFechaFin = sc.nextLine();
-
-        String sql = "UPDATE Receta SET idPaciente = ?, idMedicamento = ?, fechaFin = ? WHERE idReceta = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, nuevoIdPaciente);
-            ps.setInt(2, nuevoIdMedicamento);
-            ps.setString(3, nuevaFechaFin);
-            ps.setInt(4, idReceta);
-            ps.executeUpdate();
-            System.out.println("\nReceta modificada correctamente.");
-        } catch (SQLException e) {
-            System.out.println("\nError al modificar la receta: " + e.getMessage());
-        }
-    }
-    
+    // Eliminar tablas
     public static void eliminarTablas(Connection con) {
         System.out.println("\n¿Deseas eliminar todas las tablas o solo una?");
         System.out.println("1. Eliminar todas las tablas");
@@ -386,28 +137,20 @@ public class CRUD {
         int opcion = sc.nextInt();
         sc.nextLine();
 
-        switch (opcion) {
-            case 1:
-                eliminarTodasLasTablas(con);
-                break;
-
-            case 2:
-                borrarTabla(con);
-                break;
-
-            default:
-                System.out.println("\nOpción no válida.");
-                break;
+        if (opcion == 1) {
+            eliminarTodasLasTablas(con);
+        } else if (opcion == 2) {
+            borrarTabla(con);
+        } else {
+            System.out.println("Opción no válida.");
         }
     }
 
     public static void eliminarTodasLasTablas(Connection con) {
-        try {
-            String sql = "DROP TABLE IF EXISTS Receta, Medicamentos, Pacientes";
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.executeUpdate();
-                System.out.println("\nTodas las tablas han sido eliminadas.");
-            }
+        String sql = "DROP TABLE IF EXISTS Receta, Medicamentos, Pacientes";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.executeUpdate();
+            System.out.println("\nTodas las tablas han sido eliminadas.");
         } catch (SQLException e) {
             System.out.println("\nError al eliminar las tablas: " + e.getMessage());
         }
@@ -421,7 +164,6 @@ public class CRUD {
         System.out.print("Elige una opción: ");
         int subopcion = sc.nextInt();
         sc.nextLine();
-
         String tabla = "";
         if (subopcion == 1) {
             tabla = "Pacientes";
@@ -429,17 +171,18 @@ public class CRUD {
             tabla = "Medicamentos";
         } else if (subopcion == 3) {
             tabla = "Receta";
+        } else {
+            System.out.println("\nOpción no válida.");
+            return;
         }
 
         System.out.print("\n¿Estás seguro de que quieres eliminar la tabla " + tabla + "? (S/N): ");
         String confirmacion = sc.nextLine();
         if ("S".equalsIgnoreCase(confirmacion)) {
-            try {
-                String sql = "DROP TABLE " + tabla;
-                try (PreparedStatement ps = con.prepareStatement(sql)) {
-                    ps.executeUpdate();
-                    System.out.println("\nTabla " + tabla + " eliminada correctamente.");
-                }
+            String sql = "DROP TABLE " + tabla;
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.executeUpdate();
+                System.out.println("\nTabla " + tabla + " eliminada correctamente.");
             } catch (SQLException e) {
                 System.out.println("\nError al eliminar la tabla: " + e.getMessage());
             }

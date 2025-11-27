@@ -1,0 +1,100 @@
+package inicio;
+
+import java.sql.*;
+import java.util.Scanner;
+
+public class CRUDReceta {
+
+    public static void crearTablaReceta(Connection con) {
+        String sql = "CREATE TABLE Receta (" +
+                "idReceta int AUTO_INCREMENT Primary Key, " +
+                "idPaciente int, " +
+                "idMedicamento int, " +
+                "fechaFin date, " +
+                "Constraint Foreign Key (idPaciente) References Pacientes(idPaciente), " +
+                "Constraint Foreign Key (idMedicamento) References Medicamentos(idMedicamento)" +
+                ")";
+        try (Statement st = con.createStatement()) {
+            st.executeUpdate(sql);
+            System.out.println("\nTabla Receta creada con éxito.");
+        } catch (SQLException e) {
+            System.out.println("\nError al crear la tabla Receta: " + e.getMessage());
+        }
+    }
+
+    public static void insertarReceta(Connection con) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("\nIntroduce el ID del paciente: ");
+        int idPaciente = sc.nextInt();
+        System.out.print("Introduce el ID del medicamento: ");
+        int idMedicamento = sc.nextInt();
+        sc.nextLine();
+        System.out.print("Introduce la fecha de finalización de la receta (YYYY-MM-DD): ");
+        String fechaFin = sc.nextLine();
+        String sql = "INSERT INTO Receta (idPaciente, idMedicamento, fechaFin) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idPaciente);
+            ps.setInt(2, idMedicamento);
+            ps.setString(3, fechaFin);
+            ps.executeUpdate();
+            System.out.println("\nReceta insertada correctamente.");
+        } catch (SQLException e) {
+            System.out.println("\nError al insertar receta: " + e.getMessage());
+        }
+    }
+
+    public static void modificarReceta(Connection con) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("\nIntroduce el ID de la receta a modificar: ");
+        int idReceta = sc.nextInt();
+        sc.nextLine();
+        System.out.print("Introduce el nuevo ID del paciente: ");
+        int idPaciente = sc.nextInt();
+        System.out.print("Introduce el nuevo ID del medicamento: ");
+        int idMedicamento = sc.nextInt();
+        sc.nextLine();
+        System.out.print("Introduce la nueva fecha de finalización de la receta (YYYY-MM-DD): ");
+        String fechaFin = sc.nextLine();
+        String sql = "UPDATE Receta SET idPaciente = ?, idMedicamento = ?, fechaFin = ? WHERE idReceta = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idPaciente);
+            ps.setInt(2, idMedicamento);
+            ps.setString(3, fechaFin);
+            ps.setInt(4, idReceta);
+            ps.executeUpdate();
+            System.out.println("\nReceta modificada correctamente.");
+        } catch (SQLException e) {
+            System.out.println("\nError al modificar receta: " + e.getMessage());
+        }
+    }
+
+    public static void listarDatos(Connection con) {
+        String sql = "SELECT * FROM Receta";
+        try (Statement st = con.createStatement()) {
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("idReceta"));
+                System.out.println("ID Paciente: " + rs.getInt("idPaciente"));
+                System.out.println("ID Medicamento: " + rs.getInt("idMedicamento"));
+                System.out.println("Fecha de fin: " + rs.getString("fechaFin"));
+                System.out.println("-----------------------");
+            }
+        } catch (SQLException e) {
+            System.out.println("\nError al listar las recetas: " + e.getMessage());
+        }
+    }
+
+    public static void eliminarReceta(Connection con) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("\nIntroduce el ID de la receta a eliminar: ");
+        int idReceta = sc.nextInt();
+        String sql = "DELETE FROM Receta WHERE idReceta = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idReceta);
+            ps.executeUpdate();
+            System.out.println("\nReceta eliminada correctamente.");
+        } catch (SQLException e) {
+            System.out.println("\nError al eliminar receta: " + e.getMessage());
+        }
+    }
+}
