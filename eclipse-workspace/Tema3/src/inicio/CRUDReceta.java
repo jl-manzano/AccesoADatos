@@ -5,15 +5,18 @@ import java.util.Scanner;
 
 public class CRUDReceta {
 
+    static Scanner sc = new Scanner(System.in);
+
+    // Método para crear la tabla Receta
     public static void crearTablaReceta(Connection con) {
-        String sql = "CREATE TABLE Receta (" +
-                "idReceta int AUTO_INCREMENT Primary Key, " +
-                "idPaciente int, " +
-                "idMedicamento int, " +
-                "fechaFin date, " +
-                "Constraint Foreign Key (idPaciente) References Pacientes(idPaciente), " +
-                "Constraint Foreign Key (idMedicamento) References Medicamentos(idMedicamento)" +
-                ")";
+        String sql = "CREATE TABLE IF NOT EXISTS Receta ("
+                + "idReceta int AUTO_INCREMENT Primary Key,"
+                + "idPaciente int,"
+                + "idMedicamento int,"
+                + "fechaFin date,"
+                + "Constraint Foreign Key (idPaciente) References Pacientes(idPaciente) ON DELETE CASCADE,"
+                + "Constraint Foreign Key (idMedicamento) References Medicamentos(idMedicamento) ON DELETE CASCADE"
+                + ")";
         try (Statement st = con.createStatement()) {
             st.executeUpdate(sql);
             System.out.println("\nTabla Receta creada con éxito.");
@@ -22,8 +25,8 @@ public class CRUDReceta {
         }
     }
 
+    // Método para insertar una receta
     public static void insertarReceta(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el ID del paciente: ");
         int idPaciente = sc.nextInt();
         System.out.print("Introduce el ID del medicamento: ");
@@ -31,6 +34,7 @@ public class CRUDReceta {
         sc.nextLine();
         System.out.print("Introduce la fecha de finalización de la receta (YYYY-MM-DD): ");
         String fechaFin = sc.nextLine();
+
         String sql = "INSERT INTO Receta (idPaciente, idMedicamento, fechaFin) VALUES (?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPaciente);
@@ -43,8 +47,8 @@ public class CRUDReceta {
         }
     }
 
+    // Método para modificar una receta
     public static void modificarReceta(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el ID de la receta a modificar: ");
         int idReceta = sc.nextInt();
         sc.nextLine();
@@ -55,6 +59,7 @@ public class CRUDReceta {
         sc.nextLine();
         System.out.print("Introduce la nueva fecha de finalización de la receta (YYYY-MM-DD): ");
         String fechaFin = sc.nextLine();
+
         String sql = "UPDATE Receta SET idPaciente = ?, idMedicamento = ?, fechaFin = ? WHERE idReceta = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPaciente);
@@ -64,11 +69,12 @@ public class CRUDReceta {
             ps.executeUpdate();
             System.out.println("\nReceta modificada correctamente.");
         } catch (SQLException e) {
-            System.out.println("\nError al modificar receta: " + e.getMessage());
+            System.out.println("\nError al modificar la receta: " + e.getMessage());
         }
     }
 
-    public static void listarDatos(Connection con) {
+    // Método para listar las recetas sin filtro
+    public static void listarSinFiltro(Connection con) {
         String sql = "SELECT * FROM Receta";
         try (Statement st = con.createStatement()) {
             ResultSet rs = st.executeQuery(sql);
@@ -80,12 +86,12 @@ public class CRUDReceta {
                 System.out.println("-----------------------");
             }
         } catch (SQLException e) {
-            System.out.println("\nError al listar las recetas: " + e.getMessage());
+            System.out.println("\nError al listar las recetas sin filtro: " + e.getMessage());
         }
     }
 
+    // Método para eliminar una receta
     public static void eliminarReceta(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el ID de la receta a eliminar: ");
         int idReceta = sc.nextInt();
         String sql = "DELETE FROM Receta WHERE idReceta = ?";
@@ -95,6 +101,24 @@ public class CRUDReceta {
             System.out.println("\nReceta eliminada correctamente.");
         } catch (SQLException e) {
             System.out.println("\nError al eliminar receta: " + e.getMessage());
+        }
+    }
+
+    // Filtrar por campo
+    public static void listarConFiltro(Connection con, String campo, String valor) {
+        String sql = "SELECT * FROM Receta WHERE " + campo + " LIKE ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + valor + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("idReceta"));
+                System.out.println("ID Paciente: " + rs.getInt("idPaciente"));
+                System.out.println("ID Medicamento: " + rs.getInt("idMedicamento"));
+                System.out.println("Fecha de fin: " + rs.getString("fechaFin"));
+                System.out.println("-----------------------");
+            }
+        } catch (SQLException e) {
+            System.out.println("\nError al listar las recetas con filtro: " + e.getMessage());
         }
     }
 }

@@ -48,6 +48,7 @@ public class Main {
         }
     }
 
+    // Eliminar un registro de cualquier tabla
     public static void eliminarRegistro(Connection con) {
         System.out.println("\n¿De qué tabla deseas eliminar un registro?");
         System.out.println("1. Pacientes");

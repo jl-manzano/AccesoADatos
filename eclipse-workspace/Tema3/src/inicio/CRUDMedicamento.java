@@ -5,11 +5,14 @@ import java.util.Scanner;
 
 public class CRUDMedicamento {
 
+    static Scanner sc = new Scanner(System.in);
+
+    // Método para crear la tabla Medicamentos
     public static void crearTablaMedicamentos(Connection con) {
-        String sql = "CREATE TABLE Medicamentos (" +
-                "idMedicamento int AUTO_INCREMENT Primary Key, " +
-                "composicion varchar(45)" +
-                ")";
+        String sql = "CREATE TABLE IF NOT EXISTS Medicamentos ("
+                + "idMedicamento int AUTO_INCREMENT Primary Key, "
+                + "composicion varchar(45)"
+                + ")";
         try (Statement st = con.createStatement()) {
             st.executeUpdate(sql);
             System.out.println("\nTabla Medicamentos creada con éxito.");
@@ -18,10 +21,11 @@ public class CRUDMedicamento {
         }
     }
 
+    // Método para insertar un medicamento
     public static void insertarMedicamento(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce la composición del medicamento: ");
         String composicion = sc.nextLine();
+
         String sql = "INSERT INTO Medicamentos (composicion) VALUES (?)";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, composicion);
@@ -32,13 +36,14 @@ public class CRUDMedicamento {
         }
     }
 
+    // Método para modificar un medicamento
     public static void modificarMedicamento(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el ID del medicamento a modificar: ");
         int idMedicamento = sc.nextInt();
         sc.nextLine();
         System.out.print("Introduce la nueva composición del medicamento: ");
         String composicion = sc.nextLine();
+
         String sql = "UPDATE Medicamentos SET composicion = ? WHERE idMedicamento = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, composicion);
@@ -50,7 +55,8 @@ public class CRUDMedicamento {
         }
     }
 
-    public static void listarDatos(Connection con) {
+    // Método para listar los medicamentos sin filtro
+    public static void listarSinFiltro(Connection con) {
         String sql = "SELECT * FROM Medicamentos";
         try (Statement st = con.createStatement()) {
             ResultSet rs = st.executeQuery(sql);
@@ -60,12 +66,12 @@ public class CRUDMedicamento {
                 System.out.println("-----------------------");
             }
         } catch (SQLException e) {
-            System.out.println("\nError al listar los medicamentos: " + e.getMessage());
+            System.out.println("\nError al listar los medicamentos sin filtro: " + e.getMessage());
         }
     }
 
+    // Método para eliminar un medicamento
     public static void eliminarMedicamento(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el ID del medicamento a eliminar: ");
         int idMedicamento = sc.nextInt();
         String sql = "DELETE FROM Medicamentos WHERE idMedicamento = ?";
@@ -75,6 +81,22 @@ public class CRUDMedicamento {
             System.out.println("\nMedicamento eliminado correctamente.");
         } catch (SQLException e) {
             System.out.println("\nError al eliminar medicamento: " + e.getMessage());
+        }
+    }
+
+    // Filtrar por campo
+    public static void listarConFiltro(Connection con, String campo, String valor) {
+        String sql = "SELECT * FROM Medicamentos WHERE " + campo + " LIKE ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + valor + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("idMedicamento"));
+                System.out.println("Composición: " + rs.getString("composicion"));
+                System.out.println("-----------------------");
+            }
+        } catch (SQLException e) {
+            System.out.println("\nError al listar los medicamentos con filtro: " + e.getMessage());
         }
     }
 }

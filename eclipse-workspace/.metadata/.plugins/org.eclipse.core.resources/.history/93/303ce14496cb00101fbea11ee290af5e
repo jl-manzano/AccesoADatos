@@ -1,0 +1,94 @@
+package inicio;
+
+import java.sql.*;
+import java.util.Scanner;
+
+public class CRUD {
+    static Scanner sc = new Scanner(System.in);
+
+    public static void crearTablas(Connection con) {
+        System.out.println("\n¿Deseas crear todas las tablas o una tabla concreta?");
+        System.out.println("1. Crear todas las tablas");
+        System.out.println("2. Crear una tabla concreta");
+        System.out.print("Elige una opción: ");
+        int opcion = sc.nextInt();
+        sc.nextLine();
+
+        if (opcion == 1) {
+            crearTodasLasTablas(con);
+        } else if (opcion == 2) {
+            System.out.println("\n¿Qué tabla deseas crear?");
+            System.out.println("1. Pacientes");
+            System.out.println("2. Medicamentos");
+            System.out.println("3. Receta");
+            System.out.print("Elige una opción: ");
+            int tabla = sc.nextInt();
+            sc.nextLine();
+
+            if (tabla == 1) {
+                CRUDPaciente.crearTablaPacientes(con);
+            } else if (tabla == 2) {
+                CRUDMedicamento.crearTablaMedicamentos(con);
+            } else if (tabla == 3) {
+                CRUDReceta.crearTablaReceta(con);
+            }
+        }
+    }
+
+    public static void crearTodasLasTablas(Connection con) {
+        CRUDPaciente.crearTablaPacientes(con);
+        CRUDMedicamento.crearTablaMedicamentos(con);
+        CRUDReceta.crearTablaReceta(con);
+    }
+
+    public static void insertarDatos(Connection con) {
+        System.out.println("\n¿En qué tabla deseas insertar datos?");
+        System.out.println("1. Pacientes");
+        System.out.println("2. Medicamentos");
+        System.out.println("3. Receta");
+        System.out.print("Elige una opción: ");
+        int opcion = sc.nextInt();
+        sc.nextLine();
+
+        if (opcion == 1) {
+            CRUDPaciente.insertarPaciente(con);
+        } else if (opcion == 2) {
+            CRUDMedicamento.insertarMedicamento(con);
+        } else if (opcion == 3) {
+            CRUDReceta.insertarReceta(con);
+        }
+    }
+
+    public static void modificarDatos(Connection con) {
+        System.out.println("\n¿En qué tabla deseas modificar datos?");
+        System.out.println("1. Pacientes");
+        System.out.println("2. Medicamentos");
+        System.out.println("3. Receta");
+        System.out.print("Elige una opción: ");
+        int opcion = sc.nextInt();
+        sc.nextLine();
+
+        if (opcion == 1) {
+            CRUDPaciente.modificarPaciente(con);
+        } else if (opcion == 2) {
+            CRUDMedicamento.modificarMedicamento(con);
+        } else if (opcion == 3) {
+            CRUDReceta.modificarReceta(con);
+        }
+    }
+
+    public static void listarDatos(Connection con) {
+        System.out.println("\n¿En qué tabla deseas listar los datos?");
+        System.out.println("1. Pacientes");
+        System.out.println("2. Medicamentos");
+        System.out.println("3. Receta");
+        System.out.print("Elige una opción: ");
+        int opcion = sc.nextInt();
+        sc.nextLine();
+
+        System.out.print("\n¿Deseas filtrar los datos? (S/N): ");
+        String filtro = sc.nextLine();
+
+        if (opcion == 1) {
+            if ("S".equalsIgnoreCase(filtro)) {
+                System.out.p

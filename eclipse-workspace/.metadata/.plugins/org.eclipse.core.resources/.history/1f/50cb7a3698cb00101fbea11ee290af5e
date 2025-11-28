@@ -1,0 +1,53 @@
+package inicio;
+
+import java.sql.*;
+import java.util.Scanner;
+
+public class ConexionDB {
+
+    public final static String conexion = "jdbc:mysql://dns11036.phdns11.es:3306/ad2526_joseluis_manzano";
+    public final static String usuario = "ad2526_joseluis_manzano";
+    static Scanner sc = new Scanner(System.in);
+
+    public static Connection conectar() {
+        String password = "";
+        System.out.print("Introduce la contraseña: ");
+        
+        // Simulación de los asteriscos mientras se escribe la contraseña
+        password = readPasswordWithAsterisks();
+
+        Connection con = null;
+        try {
+            con = DriverManager.getConnection(conexion, usuario, password);
+            System.out.println("La conexión ha debido ir bien");
+        } catch (SQLException e) {
+            System.out.println("Error al establecer la conexión con la base de datos: " + e);
+        }
+        return con;
+    }
+
+    // Función para simular la entrada de la contraseña con asteriscos
+    private static String readPasswordWithAsterisks() {
+        StringBuilder password = new StringBuilder();
+        char ch;
+        while ((ch = sc.next().charAt(0)) != '\n') {
+            if (ch == '\r') {  // Ignorar los saltos de línea (ENTER)
+                break;
+            }
+            System.out.print("*"); // Imprimir un asterisco por cada carácter ingresado
+            password.append(ch);
+        }
+        return password.toString();
+    }
+
+    public static void desconectar(Connection con) {
+        try {
+            if (con != null && !con.isClosed()) {
+                con.close();
+                System.out.println("Conexión cerrada.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al cerrar la conexión: " + e.getMessage());
+        }
+    }
+}

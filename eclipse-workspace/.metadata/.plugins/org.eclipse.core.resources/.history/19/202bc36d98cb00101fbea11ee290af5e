@@ -1,0 +1,62 @@
+package inicio;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.Scanner;
+
+public class ConexionDB {
+
+    public final static String conexion = "jdbc:mysql://dns11036.phdns11.es:3306/ad2526_joseluis_manzano";
+    public final static String usuario = "ad2526_joseluis_manzano";
+    static Scanner sc = new Scanner(System.in);
+
+    // Método para conectar a la base de datos
+    public static Connection conectar() {
+        String password = "";
+        System.out.print("Introduce la contraseña: ");
+        
+        // Llamamos al método para leer la contraseña con asteriscos
+        password = readPasswordWithAsterisks();
+        
+        Connection con = null;
+        try {
+            con = DriverManager.getConnection(conexion, usuario, password);
+            System.out.println("La conexión ha debido ir bien");
+        } catch (SQLException e) {
+            System.out.println("Error al establecer la conexión con la base de datos: " + e);
+        }
+        return con;
+    }
+
+    // Método que simula la entrada de la contraseña con asteriscos
+    private static String readPasswordWithAsterisks() {
+        StringBuilder password = new StringBuilder();
+        char ch;
+        
+        try {
+            while ((ch = (char) System.in.read()) != '\n') {
+                if (ch == '\r') {  // Ignoramos el retorno de carro
+                    break;
+                }
+                System.out.print("*"); // Muestra un asterisco por cada carácter ingresado
+                password.append(ch);   // Guarda el carácter real en la variable
+            }
+        } catch (IOException e) {
+            System.out.println("Error leyendo la contraseña.");
+        }
+
+        return password.toString();
+    }
+
+    // Método para desconectar la base de datos
+    public static void desconectar(Connection con) {
+        try {
+            if (con != null && !con.isClosed()) {
+                con.close();
+                System.out.println("Conexión cerrada.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al cerrar la conexión: " + e.getMessage());
+        }
+    }
+}

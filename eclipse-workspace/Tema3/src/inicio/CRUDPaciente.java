@@ -5,13 +5,16 @@ import java.util.Scanner;
 
 public class CRUDPaciente {
 
+    static Scanner sc = new Scanner(System.in);
+
+    // Método para crear la tabla Pacientes
     public static void crearTablaPacientes(Connection con) {
-        String sql = "CREATE TABLE Pacientes (" +
-                "idPaciente int AUTO_INCREMENT Primary Key, " +
-                "nombre varchar(45), " +
-                "apellidos varchar(45), " +
-                "NSS varchar(11)" +
-                ")";
+        String sql = "CREATE TABLE IF NOT EXISTS Pacientes ("
+                + "idPaciente int AUTO_INCREMENT Primary Key,"
+                + "nombre varchar(45),"
+                + "apellidos varchar(45),"
+                + "NSS varchar(11)"
+                + ")";
         try (Statement st = con.createStatement()) {
             st.executeUpdate(sql);
             System.out.println("\nTabla Pacientes creada con éxito.");
@@ -20,14 +23,15 @@ public class CRUDPaciente {
         }
     }
 
+    // Método para insertar un nuevo paciente
     public static void insertarPaciente(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el nombre del paciente: ");
         String nombre = sc.nextLine();
         System.out.print("Introduce los apellidos del paciente: ");
         String apellidos = sc.nextLine();
         System.out.print("Introduce el NSS del paciente: ");
         String nss = sc.nextLine();
+
         String sql = "INSERT INTO Pacientes (nombre, apellidos, NSS) VALUES (?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, nombre);
@@ -40,8 +44,8 @@ public class CRUDPaciente {
         }
     }
 
+    // Método para modificar los datos de un paciente
     public static void modificarPaciente(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el ID del paciente a modificar: ");
         int idPaciente = sc.nextInt();
         sc.nextLine();
@@ -51,6 +55,7 @@ public class CRUDPaciente {
         String apellidos = sc.nextLine();
         System.out.print("Introduce el nuevo NSS del paciente: ");
         String nss = sc.nextLine();
+
         String sql = "UPDATE Pacientes SET nombre = ?, apellidos = ?, NSS = ? WHERE idPaciente = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, nombre);
@@ -64,7 +69,8 @@ public class CRUDPaciente {
         }
     }
 
-    public static void listarDatos(Connection con) {
+    // Método para listar los pacientes sin filtro
+    public static void listarSinFiltro(Connection con) {
         String sql = "SELECT * FROM Pacientes";
         try (Statement st = con.createStatement()) {
             ResultSet rs = st.executeQuery(sql);
@@ -76,12 +82,12 @@ public class CRUDPaciente {
                 System.out.println("-----------------------");
             }
         } catch (SQLException e) {
-            System.out.println("\nError al listar los pacientes: " + e.getMessage());
+            System.out.println("\nError al listar los pacientes sin filtro: " + e.getMessage());
         }
     }
 
+    // Método para eliminar un paciente
     public static void eliminarPaciente(Connection con) {
-        Scanner sc = new Scanner(System.in);
         System.out.print("\nIntroduce el ID del paciente a eliminar: ");
         int idPaciente = sc.nextInt();
         String sql = "DELETE FROM Pacientes WHERE idPaciente = ?";
@@ -91,6 +97,24 @@ public class CRUDPaciente {
             System.out.println("\nPaciente eliminado correctamente.");
         } catch (SQLException e) {
             System.out.println("\nError al eliminar el paciente: " + e.getMessage());
+        }
+    }
+
+    // Filtrar por campo
+    public static void listarConFiltro(Connection con, String campo, String valor) {
+        String sql = "SELECT * FROM Pacientes WHERE " + campo + " LIKE ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + valor + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("idPaciente"));
+                System.out.println("Nombre: " + rs.getString("nombre"));
+                System.out.println("Apellidos: " + rs.getString("apellidos"));
+                System.out.println("NSS: " + rs.getString("NSS"));
+                System.out.println("-----------------------");
+            }
+        } catch (SQLException e) {
+            System.out.println("\nError al listar los pacientes con filtro: " + e.getMessage());
         }
     }
 }
